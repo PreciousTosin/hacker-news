@@ -17,6 +17,11 @@ body {
   color: #333333;
 }
 
+.cards {
+  padding: 0.5rem 1.5rem;
+  margin: 0.5rem 0;
+}
+
 @media screen and (min-width: 800px) {
 
 }
