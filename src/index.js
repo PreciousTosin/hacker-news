@@ -2,13 +2,14 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../public/stylesheets/styles.css';
-import newsItemUI from './newsItem';
 
 const $ = require('jquery');
 require('isomorphic-fetch');
 
 const newsIds = [];
 let pageCount = 0;
+let limit = 100;
+
 
 function retrieveNewsIds() {
   return new Promise((resolve, reject) => {
@@ -36,14 +37,15 @@ function retrieveNews(id) {
   });
 }
 
-function loopNews(i) {
+function loopNews(i, countLimit) {
   let itemDiv = '';
   let itemUrl = '';
-  const hr = document.createElement('hr');
+  let hr = '';
   let h3 = '';
   let h3node = '';
   let itemUrlNode = '';
-  for (i; i < 100; i++) {
+  for (i; i < countLimit; i++) {
+    if (pageCount > 500) return;
     retrieveNews(newsIds[i])
       .then((item) => {
         itemDiv = document.createElement('div');
@@ -53,6 +55,7 @@ function loopNews(i) {
         itemUrl.setAttribute('href', item.url);
         itemUrl.setAttribute('target', '_blank');
         itemUrlNode = document.createTextNode(item.url);
+        hr = document.createElement('hr');
         itemUrl.appendChild(itemUrlNode);
         h3.appendChild(h3node);
         itemDiv.appendChild(h3);
@@ -62,25 +65,23 @@ function loopNews(i) {
         document.querySelector('.hackernews--container').appendChild(itemDiv);
       })
       .catch(error => console.log(error));
-    if (pageCount > 500) break;
     pageCount += 1;
+    console.log(pageCount);
   }
 }
 
-
-/*
-* @dev function to add various event handlers
-*/
-/* function addEvents() {
-  document.querySelector('#submit-btn').addEventListener('click', (event) => {
-    event.preventDefault();
-  });
-} */
+window.onscroll = (ev) => {
+  if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight) {
+    console.log('you\'re at the bottom of the page', pageCount);
+    limit += 100;
+    loopNews(pageCount, limit);
+  }
+};
 
 $(document).ready(() => {
   retrieveNewsIds().then((newsids) => {
     // retrieveNews(newsids[0]).then(item => console.log(item)).catch(error => console.log(error));
-    loopNews(pageCount);
+    loopNews(pageCount, 100);
   }).catch(error => console.log(error));
   // addEvents();
 });
